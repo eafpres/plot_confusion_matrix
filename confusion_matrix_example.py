@@ -88,7 +88,7 @@ def plot_confusion_matrix(cm, title, classes):
 #
 #%% example code
 #
-#%% get data
+#%% multi-class example
 #
 data = pd.read_csv('iris.data.txt')
 iris_label_enc = OrdinalEncoder().fit(pd.DataFrame(data.iloc[:, -1]))
@@ -98,3 +98,29 @@ model = OneVsRestClassifier(LogisticRegression()).fit(data.iloc[:, :-1], iris_cl
 iris_preds = model.predict(data.iloc[:, :-1])
 cm = confusion_matrix(iris_classes.ravel(), iris_preds)
 plot_confusion_matrix(cm, 'iris confusion matrix', iris_labels)
+#
+#%% multi-label example
+#
+rows = 100
+labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+label_cols = pd.DataFrame(columns = labels)
+for i in range(rows):
+    for column in range(len(labels)):
+        if np.random.randint(0, 2) == 1:
+            label_cols.loc[i, labels[column]] = labels[column]
+        else:
+            label_cols.loc[i, labels[column]] = 'NA'
+errors = [1, 1, 1, 1, 1, 1, 0]
+predicted_cols = pd.DataFrame(columns = labels)
+for i in range(rows):
+    for column in range(len(labels)):
+        predicted_cols.loc[i, labels[column]] = np.random.choice(errors)
+for i in range(rows):
+    for position in range(len(labels)):
+        if predicted_cols.loc[i, labels[position]] == 1:
+            predicted_cols.loc[i, labels[position]] = label_cols.loc[i, labels[position]]
+        else:
+            predicted_cols.loc[i, labels[position]] = np.random.choice([labels[position], 'NA'])
+for i in range(len(labels)):
+    cm = confusion_matrix(predicted_cols.loc[:, labels[i]], label_cols.loc[:, labels[i]], labels = [labels[i], 'NA'])
+    plot_confusion_matrix(cm, 'confusion matrix class ' + labels[i], classes = [labels[i], 'NA'])
